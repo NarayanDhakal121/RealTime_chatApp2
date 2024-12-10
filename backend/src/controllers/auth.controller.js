@@ -1,6 +1,7 @@
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.modal.js";
 import bcrypt from "bcryptjs";
+import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
   const { fullName, password, email } = req.body;
@@ -86,5 +87,53 @@ export const logout = (req, res) => {
   } catch (error) {
     console.log("Error in logout controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    const userId = req.user._id;
+    if (!profilePic) {
+      return res.status(400).message({ message: "profilePic is required" });
+    }
+    // if has profilePic
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: uploadResponse.secure_url },
+      { new: true }
+    );
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.log("error in upload profile:", error.message);
+    return res.status(500).message({ message: "Internal Server error" });
+  }
+};
+
+// export const checkAuth = async (req, res) => {
+//   try {
+//     if (!req.user) {
+//       return res.status(401).json({ message: "Unauthorized - No User Found" });
+//     }
+//     // give you an authenticated user
+//     res.status(200).json(req.user);
+//   } catch (error) {
+//     console.log("error in  checkAuth controller", error.message);
+//     res.status(500).json({ message: "Internal Server error" });
+//   }
+// };
+
+export const checkAuth = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized - No User Found" });
+    }
+
+    // Return authenticated user
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.log("Error in checkAuth controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" }); // Corrected the response method
   }
 };
