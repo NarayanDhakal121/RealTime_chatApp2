@@ -4,7 +4,7 @@ import { useChatStore } from "../store/useChatStore";
 
 const ChatHeader = () => {
   const { selectedUser, setSelectedUser } = useChatStore();
-  const { onlineUsers = [] } = useAuthStore(); // Default onlineUsers to an empty array
+  const { onlineUsers = [] } = useAuthStore(); 
 
   // Guard against undefined selectedUser
   if (!selectedUser) return null;

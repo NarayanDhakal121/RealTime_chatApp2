@@ -39,21 +39,52 @@ export const getMessages = async (req, res) => {
 // send messages between two different users
 //sends the text in the form of user or messages
 
+// export const sendMessages = async (req, res) => {
+//   try {
+//     const { text, image } = req.body;
+//     const { id: receiverId } = req.params;
+
+//     // senderId is me
+
+//     const senderId = req.user._id;
+//     let imageUrl;
+//     if (image) {
+//       //upload base64 image to cloudinary
+//       const uploadResponse = await cloudinary.uploader.upload(image);
+//       imageUrl = uploadResponse.secure_url;
+//     }
+//     //handle this image Case
+
+//     const newMessage = new Message({
+//       senderId,
+//       receiverId,
+//       text,
+//       image: imageUrl,
+//     });
+
+//     await newMessage.save();
+
+//     // todo: realtime functionalities goeshere => socket.io
+//     res.status(201).json(newMessage);
+//   } catch (error) {
+//     console.log("error in sendMessageController:", error.message);
+//     res.status(500).json({ error: "Internal server Error" });
+//   }
+// };
+
 export const sendMessages = async (req, res) => {
   try {
     const { text, image } = req.body;
     const { id: receiverId } = req.params;
-
-    // senderId is me
-
     const senderId = req.user._id;
-    let imageUrl;
+
+    let imageUrl = null;
+
     if (image) {
-      //upload base64 image to cloudinary
+      // Upload base64 image to Cloudinary
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
     }
-    //handle this image Case
 
     const newMessage = new Message({
       senderId,
@@ -62,12 +93,17 @@ export const sendMessages = async (req, res) => {
       image: imageUrl,
     });
 
+    // Save the message to the database
     await newMessage.save();
+    console.log("New Message:", newMessage);
 
-    // todo: realtime functionalities goeshere => socket.io
+    const savedMessage = await newMessage.save();
+    console.log("Saved Message:", savedMessage);
+
+    // Send the newly created message back as the response
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("error in sendMessageController:", error.message);
-    res.status(500).json({ error: "Internal server Error" });
+    console.error("Error in sendMessages Controller:", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
